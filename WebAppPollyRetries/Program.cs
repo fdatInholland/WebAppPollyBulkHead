@@ -17,6 +17,8 @@ namespace WebAppPollyBulkHead
             })
                 .AddResilienceHandler("WeatherApiPolicy", resilienceBuilder =>
                 {
+                    var logger = builder.Services.BuildServiceProvider().GetRequiredService<ILogger<Program>>();
+
                     // 1. Add Bulkhead Isolation (Concurrency Limiter)
                     // Acts as your bulkhead: restricts maximum parallel calls to 10, 
                     // and allows up to 5 requests to queue up before failing fast.
@@ -44,7 +46,7 @@ namespace WebAppPollyBulkHead
 
                         OnRetry = args =>
                         {
-                            Console.WriteLine($"[WeatherApi] Retry attempt {args.AttemptNumber} due to {args.Outcome.Exception?.Message ?? args.Outcome.Result?.StatusCode.ToString()}.");
+                            logger.LogInformation($"[WeatherApi] Retry attempt {args.AttemptNumber} due to {args.Outcome.Exception?.Message ?? args.Outcome.Result?.StatusCode.ToString()}.");
                             return ValueTask.CompletedTask;
                         }
                     });
